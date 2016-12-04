@@ -63,7 +63,7 @@ int main(int argc, char **argv){
 	
 	socklen_t saddr_size;
 	ssize_t data_size;
-	struct sockaddr_in saddr;	
+	struct sockaddr saddr;	
 	struct sockaddr_in serveraddr;
 
 	/* Erstellen des Abbruch-Handlers */
