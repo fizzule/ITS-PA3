@@ -120,7 +120,7 @@ int main(int argc, char **argv){
     	gpgme_set_armor (ctx, 1);
 
     	// Create a data object that contains the text to sign
-    	err = gpgme_data_new_from_mem (&in, textToSign, textLength, 0);
+    	err = gpgme_data_new_from_mem (&in, argv[4], textLength, 0);
         if(err){
 		close_all();
 		return 1;
