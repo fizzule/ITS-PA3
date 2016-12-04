@@ -13,11 +13,10 @@ Programm zum abfangen von dem Passwort eines Benutzers bei MQTT Nachrichten an e
 #include <arpa/inet.h>
 #include <gpgme.h>
 
-int sock_raw;
-char *buffer;
+char buffer[65536];
 char command[2000];
-char user[256];
-char pass[256];
+char user[65536];
+char pass[65536];
 
 /*
 Schliesse Socket, wenn offen und gebe Buffer frei, wenn noch nicht geschehen.
@@ -31,6 +30,14 @@ void close_all(){
 		free(buffer);
 		buffer = NULL;
 	}
+}
+
+/*
+Gebe Usage aus.
+*/
+usage(){
+	printf("Please add all parameters as shown below through the console. \n");
+	printf("./pa3_server SERVER_PORT\n");
 }
 
 /*
@@ -52,24 +59,14 @@ int main(int argc, char **argv){
 
 	struct sigaction sigIntHandler;
 	
+	     
+   	int sock;
+	int bindret;
+	
 	socklen_t saddr_size;
 	ssize_t data_size;
-	struct sockaddr saddr;
-
-	/* Usage */
-	printf("You can enter Port first and User second after the command!\n");
-	printf("If one or both are missing, the default values are used.\n");
-	printf("Default-Port: 1883\n");
-	printf("Default User: remote-control\n");
-	
-	/* Verarbeiten von spezifischen Eingaben */
-	if(argc == 3){
-		sniffport = (unsigned short) atoi(argv[1]);
-		strcpy(user, argv[2]);
-	} else {	
-		sniffport = 1883;
-		strcpy(user, "remote-control");
-	}	
+	struct sockaddr saddr;	
+	struct sockaddr serveraddr;
 
 	/* Erstellen des Abbruch-Handlers */
 	sigIntHandler.sa_handler = abbruch_handler;
@@ -78,6 +75,54 @@ int main(int argc, char **argv){
 
 	sigaction(SIGINT, &sigIntHandler, NULL);
 	
-	printf("Finish!\n");
+	/* Verarbeiten von spezifischen Eingaben */
+	if(argc == 2){
+		printf("Port: %s\n", argv[1]);
+	} else {	
+		printf("Please provide a correct port number!\n");
+		usage();
+		return 1;
+	}
+	
+     	/* Oeffnen des Socket */
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if(sock < 0){
+		printf("Socket Error\n");
+		return 1;
+	}
+     
+    	/* Erstelle Server Port */
+    	memset((char *) &serveraddr, 0, sizeof(serveraddr));
+     
+    	serveraddr.sin_family = AF_INET;
+    	serveraddr.sin_port = htons(atoi(argv[1]));
+    	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+     
+    	/* Binde Socket */
+	bindret = bind(sock , (struct sockaddr*)&serveraddr, sizeof(serveraddr))
+	if(bindret < 0){
+        	close_all();
+		return 1;
+    	}
+     
+	saddr_size = sizeof saddr;
+	
+    	/* Entgegennehmen der Pakete */
+    	while(1)
+    	{      
+		data_size = recvfrom(sock, buffer, 65536, 0, &saddr, &saddr_size);
+		if(data_size < 0){
+        		close_all();
+			return 1;
+    		}
+ 
+         
+       		//print details of the client/peer and the data received
+        	//printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
+        	//printf("Data: %s\n" , bufer);
+    	}
+	
+	close_all();
+	printf("Finished!\n");
 	return 0;
 }
