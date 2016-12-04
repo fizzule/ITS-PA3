@@ -22,14 +22,14 @@ char pass[65536];
 Schliesse Socket, wenn offen und gebe Buffer frei, wenn noch nicht geschehen.
 */
 void close_all(){
-	if (sock_raw >= 0){
-		close(sock_raw);
-		sock_raw = -1;
+	if (sock >= 0){
+		close(sock);
+		sock = -1;
 	}
-	if (buffer != NULL) {
-		free(buffer);
-		buffer = NULL;
-	}
+	//if (buffer != NULL) {
+	//	free(buffer);
+	//	buffer = NULL;
+	//}
 }
 
 /*
