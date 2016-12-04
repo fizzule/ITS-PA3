@@ -65,8 +65,8 @@ int main(int argc, char **argv){
 	
 	socklen_t saddr_size;
 	ssize_t data_size;
-	struct sockaddr saddr;	
-	struct sockaddr serveraddr;
+	struct sockaddr_in saddr;	
+	struct sockaddr_in serveraddr;
 
 	/* Erstellen des Abbruch-Handlers */
 	sigIntHandler.sa_handler = abbruch_handler;
@@ -99,7 +99,7 @@ int main(int argc, char **argv){
     	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
      
     	/* Binde Socket */
-	bindret = bind(sock , (struct sockaddr*)&serveraddr, sizeof(serveraddr))
+	bindret = bind(sock , (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if(bindret < 0){
         	close_all();
 		return 1;
