@@ -1,22 +1,18 @@
 /*
-Programm zum abfangen von dem Passwort eines Benutzers bei MQTT Nachrichten an einem bestimmten Port.
+Server für das Empfangen von PGP verschlüsselten Nachrichten.
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <linux/ip.h>
-#include <linux/tcp.h>
 #include <signal.h>
+#include <unistd.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 //#include <gpgme.h>
 
 int sock;
 char buffer[65536];
-char user[65536];
-char pass[65536];
 
 /*
 Schliesse Socket, wenn offen und gebe Buffer frei, wenn noch nicht geschehen.
@@ -114,10 +110,10 @@ int main(int argc, char **argv){
 			return 1;
     		}
  
-         
+         	
        		//print details of the client/peer and the data received
-        	//printf("Received packet from %s:%d\n", inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port));
-        	//printf("Data: %s\n" , bufer);
+        	//printf("Received packet from %s:%d\n", inet_ntoa(saddr.sin_addr), ntohs(si_other.sin_port));
+        	printf("Data: %s\n" , buffer);
     	}
 	
 	close_all();
