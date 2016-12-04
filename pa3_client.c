@@ -96,14 +96,11 @@ int main(int argc, char **argv){
         	return 1;
     	}
  
-    	while(1)
-    	{ 
-        	//send the message
-        	if (sendto(sock, argv[4], strlen(argv[4]) , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
-            		close_all();
-        		return 1;
-        	}
-    	}
+        //send the message
+        if (sendto(sock, argv[4], strlen(argv[4]) , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
+            	close_all();
+        	return 1;
+        }
  
 	close_all();
 	printf("Finished!\n");
