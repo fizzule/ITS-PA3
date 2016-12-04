@@ -11,7 +11,7 @@ Programm zum abfangen von dem Passwort eines Benutzers bei MQTT Nachrichten an e
 #include <linux/tcp.h>
 #include <signal.h>
 #include <arpa/inet.h>
-#include <gpgme.h>
+//#include <gpgme.h>
 
 char buffer[65536];
 char command[2000];
