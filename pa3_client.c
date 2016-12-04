@@ -92,7 +92,7 @@ int main(int argc, char **argv){
      
     	if (inet_aton(argv[1] , &saddr.sin_addr) == 0){
         	fprintf(stderr, "inet_aton() failed\n");
-		close_all()
+		close_all();
         	return 1;
     	}
  
@@ -100,7 +100,7 @@ int main(int argc, char **argv){
     	{ 
         	//send the message
         	if (sendto(sock, argv[4], strlen(argv[4]) , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
-            		close_all()
+            		close_all();
         		return 1;
         	}
     	}
