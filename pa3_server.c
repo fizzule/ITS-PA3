@@ -35,7 +35,7 @@ void close_all(){
 /*
 Gebe Usage aus.
 */
-usage(){
+void usage(){
 	printf("Please add all parameters as shown below through the console. \n");
 	printf("./pa3_server SERVER_PORT\n");
 }
