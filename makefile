@@ -10,10 +10,10 @@ default: all
 all: server client
 
 server: $(TARGETSERVER)
-	$(CC) $(CFLAGS) -o $(TARGETSERVER) $(LINKER) $(TARGETSERVER).c 
+	$(CC) $(CFLAGS) -o $(TARGETSERVER) ${LINKER} $(TARGETSERVER).c 
 
 client: $(TARGETCLIENT)
-	$(CC) -o $(TARGETCLIENT) $(LINKER) $(TARGETCLIENT).c $(CFLAGS)
+	$(CC) $(CFLAGS) -o $(TARGETCLIENT) ${LINKER} $(TARGETCLIENT).c 
 
 clean:
 	$(RM) $(TARGETSERVER)
