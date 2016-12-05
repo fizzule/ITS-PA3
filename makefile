@@ -13,7 +13,8 @@ server: $(TARGETSERVER)
 	$(CC) $(CFLAGS) -o $(TARGETSERVER) ${LINKER} $(TARGETSERVER).c 
 
 client: $(TARGETCLIENT)
-	$(CC) $(CFLAGS) -o $(TARGETCLIENT) ${LINKER} $(TARGETCLIENT).c 
+	gcc -o pa3_client ${LINKER} pa3_client.c -Wall -Werror
+	#$(CC) $(CFLAGS) -o $(TARGETCLIENT) ${LINKER} $(TARGETCLIENT).c 
 
 clean:
 	$(RM) $(TARGETSERVER)
