@@ -9,7 +9,8 @@ Server für das Empfangen von PGP verschlüsselten Nachrichten.
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-//#include <gpgme.h>
+#include <locale.h>
+#include <gpgme.h>
 
 int sock;
 char buffer[65536];
