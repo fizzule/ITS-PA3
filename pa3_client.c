@@ -16,34 +16,11 @@ int sock;
 char buffer[65536];
 
 /*
-Schliesse Socket, wenn offen und gebe Buffer frei, wenn noch nicht geschehen.
-*/
-void close_all(){
-	if (sock >= 0){
-		close(sock);
-		sock = -1;
-	}
-	//if (buffer != NULL) {
-	//	free(buffer);
-	//	buffer = NULL;
-	//}
-}
-
-/*
 Gebe Usage aus.
 */
 void usage(){
 	printf("Please add all parameters as shown below through the console. \n");
 	printf("./pa3_client SERVER_ADRESS SERVER_PORT USERNAME \"Message to encypt\" \n");
-}
-
-/*
-Spezieller Handler bei Abbruch mit Strg+C um das Programm korrekt zu schliessen.
-s: Signal ID
-*/
-void abbruch_handler(int s){
-	close_all();
-	exit(1);
 }
 
 /*
@@ -60,6 +37,9 @@ int main(int argc, char **argv){
 	struct sockaddr_in saddr;	
 
 	saddr_size = sizeof(saddr);
+	int value;
+	int n;
+	char ch;
 	
 	gpgme_ctx_t ctx;
     	gpgme_error_t err;
@@ -77,13 +57,6 @@ int main(int argc, char **argv){
         	GPGME_SIG_MODE_DETACH : Detached signature */
     	gpgme_sig_mode_t sigMode = GPGME_SIG_MODE_CLEAR;
 	
-	/* Erstellen des Abbruch-Handlers */
-	sigIntHandler.sa_handler = abbruch_handler;
-	sigemptyset(&sigIntHandler.sa_mask);
-	sigIntHandler.sa_flags = 0;
-
-	sigaction(SIGINT, &sigIntHandler, NULL);
-	
 	/* Verarbeiten von spezifischen Eingaben */
 	if(argc == 5){
 		printf("Address: %s\n", argv[1]);
@@ -95,48 +68,67 @@ int main(int argc, char **argv){
 		usage();
 		return 1;
 	}
+	
+
+    	n = sscanf(argv[2], "%d%c", &value, &ch);
+        /* Wenn sscanf keine Nummer konvertieren kann */
+    	if (n != 1) {
+		printf("Please provide correct port number!\n");
+		usage();
+		return 1;
+    	}
  
     	/* Begin setup of GPGME */
+	setlocale (LC_ALL, "");
     	gpgme_check_version (NULL);
-    	setlocale (LC_ALL, "");
     	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
     	/* End setup of GPGME */
 
-    	err = gpgme_engine_check_version (GPGME_PROTOCOL_GPGCONF);
+    	err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
     	if(err){
-		close_all();
+		printf("Error at engine check!\n");
 		return 1;
 	}
     
     	// Create the GPGME Context
     	err = gpgme_new (&ctx);
     	if(err){
-		close_all();
+		printf("Error at context creation!\n");
 		return 1;
 	}
+	
     	// Set the context to textmode
     	gpgme_set_textmode (ctx, 1);
     	// Enable ASCII armor on the context
     	gpgme_set_armor (ctx, 1);
 
+	printf("Exit correct!\n");
+	exit(0);
+	
     	// Create a data object that contains the text to sign
     	err = gpgme_data_new_from_mem (&in, argv[4], textLength, 0);
         if(err){
-		close_all();
+		printf("Error at data creation for input!\n");
+		gpgme_release (ctx);
 		return 1;
 	}
 
     	// Create a data object pointing to the out buffer
     	err = gpgme_data_new (&out);
     	if(err){
-		close_all();
+		printf("Error at data creation for output!\n");
+		gpgme_data_release (in);
+		gpgme_release (ctx);
 		return 1;
 	}
 
     	// Create a data object pointing to the result buffer
    	err = gpgme_data_new (&result);
         if(err){
-		close_all();
+		printf("Error at data creation for result!\n");
+		gpgme_data_release (in);
+		gpgme_data_release (out);
+		gpgme_release (ctx);
 		return 1;
 	}
 
