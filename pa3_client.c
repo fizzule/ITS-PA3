@@ -183,7 +183,7 @@ int main(int argc, char **argv){
     	// Error handling
     	if (ret){
         	if (gpgme_err_code_from_errno (errno)){
-			printf("Error at signing!\n");
+			printf("Error at rewinding data!\n");
 			gpgme_data_release (in);
 			gpgme_data_release (out);
 			gpgme_release (ctx);
@@ -191,57 +191,18 @@ int main(int argc, char **argv){
 		}
 	}
     	// Read the contents of "out" and place it into buf
-    	while ((ret = gpgme_data_read (out, buffer, BUF_SIZE)) > 0) {
-        	// Write the contents of "buf" to the console
-        	fwrite (buffer, ret, 1, stdout);
-		fwrite ("-", 1, 1, stdout);
-    	}
-
-    	fwrite ("\n", 1, 1, stdout);
-
-    	// Error handling
-    	//if (ret < 0)
-        //	fail_if_err (gpgme_err_code_from_errno (errno));
-
-    	// Rewind the "out" data object
-    	ret = gpgme_data_seek (out, 0, SEEK_SET);
-
-    	// Perform a decrypt/verify action
-    	err = gpgme_op_decrypt_verify (ctx, out, result);
-
-   	 // Retrieve the verification result
-    	verify_result = gpgme_op_verify_result (ctx);
-
-    	// Error handling
-    	//if (err != GPG_ERR_NO_ERROR && !verify_result)
-        //	fail_if_err (err);
-
-    	// Check if the verify_result object has signatures
-    	/*if (verify_result && verify_result->signatures) {
-        	// Iterate through the signatures in the verify_result object
-        	for (nsigs=0, sig=verify_result->signatures; sig; sig = sig->next, nsigs++) {
-            		fprintf(stdout, "Signature made with Key: %s\n", sig->fpr);
-            		fprintf(stdout, "Created: %lu; Expires %lu\n", sig->timestamp, sig->exp_timestamp);
-            		char *validity = sig->validity == GPGME_VALIDITY_UNKNOWN? "unknown":
-                    		sig->validity == GPGME_VALIDITY_UNDEFINED? "undefined":
-                    		sig->validity == GPGME_VALIDITY_NEVER? "never":
-                    		sig->validity == GPGME_VALIDITY_MARGINAL? "marginal":
-                    		sig->validity == GPGME_VALIDITY_FULL? "full":
-                    		sig->validity == GPGME_VALIDITY_ULTIMATE? "ultimate": "[?]";
-            		char *sig_status = gpg_err_code (sig->status) == GPG_ERR_NO_ERROR? "GOOD":
-                    		gpg_err_code (sig->status) == GPG_ERR_BAD_SIGNATURE? "BAD_SIG":
-                    		gpg_err_code (sig->status) == GPG_ERR_NO_PUBKEY? "NO_PUBKEY":
-                    		gpg_err_code (sig->status) == GPG_ERR_NO_DATA? "NO_SIGNATURE":
-                    		gpg_err_code (sig->status) == GPG_ERR_SIG_EXPIRED? "GOOD_EXPSIG":
-                    		gpg_err_code (sig->status) == GPG_ERR_KEY_EXPIRED? "GOOD_EXPKEY": "INVALID";
-            		fprintf(stdout, "Validity: %s; Signature Status: %s", validity, sig_status);
-            		fwrite("\n", 1, 1, stdout);
-            		tnsigs++;
-        	}
-    	}*/
-
-    	//if (err != GPG_ERR_NO_ERROR && tnsigs < 1)
-        //	fail_if_err(err);
+    	ret = gpgme_data_read (out, buffer, BUF_SIZE)
+        if (ret){
+        	if (gpgme_err_code_from_errno (errno)){
+			printf("Error at reading data!\n");
+			gpgme_data_release (in);
+			gpgme_data_release (out);
+			gpgme_release (ctx);
+			return 1;
+		}
+	}
+	// Write the contents of "buf" to the console
+        printf("%.*s\n", buffer, ret);
 
     	// Release the "in" data object
     	gpgme_data_release (in);
@@ -258,10 +219,11 @@ int main(int argc, char **argv){
 	}
  
         //send the message
-        if (sendto(sock, argv[4], strlen(argv[4]) , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
+        if (sendto(sock, buffer, ret , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
 		close(sock);
         	return 1;
         }
+	close(sock);
 	printf("Finished!\n");
 	return 0;
 }
