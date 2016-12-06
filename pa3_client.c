@@ -13,7 +13,7 @@ Client für das Senden von PGP verschlüsselten Nachrichten.
 #include <gpgme.h>
 #include <errno.h>
 
-define BUF_SIZE 65536;
+#define BUF_SIZE 65536;
 
 int sock;
 char buffer[BUF_SIZE+1];
