@@ -56,6 +56,7 @@ int main(int argc, char **argv){
 	int n;
 	char ch;
 	
+	gpgme_key_t key;
 	gpgme_ctx_t ctx;
     	gpgme_error_t err;
     	gpgme_data_t in, out;
@@ -163,7 +164,7 @@ int main(int argc, char **argv){
 		}
 
     		// Perform a decrypt/verify action
-    		err = gpgme_op_verify (ctx, in, 0, out);
+    		err = gpgme_op_verify (ctx, in, NULL, out);
 
     		// Retrieve the verification result
     		verify_result = gpgme_op_verify_result (ctx);
@@ -200,7 +201,17 @@ int main(int argc, char **argv){
 					break;
 				}
 			}
+			
 			printf("Correct Signature!\n");
+			err = gpgme_get_key(ctx, verify_result->signatures->fpr, &key, 0)
+			if(err){
+				printf("No Sender Information found!\n");
+			}else{
+				printf("Sender:\n");
+				printf("%s\n", key->uids->name);
+				gpgme_key_release (key);
+			}
+			printf("Message:\n");
 			printf("%.*s\n", ret, buffer);
 		}else{
 			printf("Incorrect Signature!\n");
