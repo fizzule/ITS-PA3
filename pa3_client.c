@@ -33,8 +33,6 @@ moegliche commands:
 ./sniffer <port> <user> --> spezifische Eingabe von Port und User
 */
 int main(int argc, char **argv){
-
-	struct sigaction sigIntHandler;
 	
 	socklen_t saddr_size;
 	struct sockaddr_in saddr;	
@@ -46,10 +44,7 @@ int main(int argc, char **argv){
 	gpgme_ctx_t ctx;
 	gpgme_key_t key;
     	gpgme_error_t err;
-    	gpgme_data_t in, out, result;
-    	gpgme_verify_result_t verify_result;
-    	gpgme_signature_t sig;
-    	int tnsigs, nsigs;
+    	gpgme_data_t in, out;
     	int ret;
 	unsigned int textLength = strlen (argv[4]);
 
