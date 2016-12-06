@@ -1,5 +1,5 @@
 /*
-Server für das Empfangen von PGP verschlüsselten Nachrichten.
+Server fuer das Empfangen von PGP verschluesselten Nachrichten.
 */
 
 #include <stdio.h>
