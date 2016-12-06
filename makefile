@@ -9,12 +9,12 @@ default: all
 
 all: server client
 
-server: $(TARGETSERVER)
-	$(CC) $(CFLAGS) -o $(TARGETSERVER) $(TARGETSERVER).c $(LINKER)
+server: pa3_server
+	$(CC) $(CFLAGS) -o pa3_server pa3_server.c $(LINKER)
 
 client: $(TARGETCLIENT)
-	$(CC) $(CFLAGS) -o $(TARGETCLIENT) $(TARGETCLIENT).c $(LINKER)
+	$(CC) $(CFLAGS) -o pa3_client pa3_client.c $(LINKER)
 
 clean:
-	$(RM) $(TARGETSERVER)
-	$(RM) $(TARGETCLIENT)
+	$(RM) pa3_server
+	$(RM) pa3_client
