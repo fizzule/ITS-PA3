@@ -181,7 +181,7 @@ int main(int argc, char **argv){
 		}
 	}
     	// Read the contents of "out" and place it into buf
-    	ret = gpgme_data_read (out, buffer, BUF_SIZE)
+    	ret = gpgme_data_read (out, buffer, BUF_SIZE);
         if (ret){
         	if (gpgme_err_code_from_errno (errno)){
 			printf("Error at reading data!\n");
