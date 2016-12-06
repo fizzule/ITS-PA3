@@ -153,5 +153,5 @@ int main(int argc, char **argv){
 	
 	close(sock);
 	printf("Finished!\n");
-	return abbruch
+	return abbruch;
 }
