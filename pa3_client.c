@@ -14,7 +14,7 @@ Client für das Senden von PGP verschlüsselten Nachrichten.
 #include <errno.h>
 
 int sock;
-int BUF_SIZE = 65536;
+const int BUF_SIZE = 65536;
 char buffer[BUF_SIZE+1];
 
 /*
