@@ -81,7 +81,7 @@ int main(int argc, char **argv){
 		return 1;
 	}
 	
-	n = sscanf(argv[1, "%d%c", &value, &ch);
+	n = sscanf(argv[1], "%d%c", &value, &ch);
         /* Wenn sscanf keine Nummer konvertieren kann */
     	if (n != 1) {
 		printf("Please provide correct port number!\n");
