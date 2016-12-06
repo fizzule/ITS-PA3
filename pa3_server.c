@@ -52,6 +52,19 @@ int main(int argc, char **argv){
 	struct sockaddr saddr;	
 	struct sockaddr_in serveraddr;
 
+	int value;
+	int n;
+	char ch;
+	
+	gpgme_ctx_t ctx;
+	gpgme_key_t key;
+    	gpgme_error_t err;
+    	gpgme_data_t in, out, result;
+    	gpgme_verify_result_t verify_result;
+    	gpgme_signature_t sig;
+	
+	gpgme_sig_mode_t sigMode = GPGME_SIG_MODE_CLEAR;
+
 	/* Erstellen des Abbruch-Handlers */
 	sigIntHandler.sa_handler = abbruch_handler;
 	sigemptyset(&sigIntHandler.sa_mask);
@@ -76,6 +89,30 @@ int main(int argc, char **argv){
 		return 1;
 	}
 	
+	/* Begin setup of GPGME */
+	setlocale (LC_ALL, "");
+    	gpgme_check_version (NULL);
+    	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+    	/* End setup of GPGME */
+
+    	err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
+    	if(err){
+		printf("Error at engine check!\n");
+		return 1;
+	}
+    
+    	// Create the GPGME Context
+    	err = gpgme_new (&ctx);
+    	if(err){
+		printf("Error at context creation!\n");
+		return 1;
+	}
+	
+    	// Set the context to textmode
+    	gpgme_set_textmode (ctx, 1);
+    	// Enable ASCII armor on the context
+    	gpgme_set_armor (ctx, 1);	
+			
 	/* Erstelle Server Port */
     	memset((char *) &serveraddr, 0, sizeof(serveraddr));
      
