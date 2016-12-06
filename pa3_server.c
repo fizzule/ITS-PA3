@@ -60,7 +60,6 @@ int main(int argc, char **argv){
     	gpgme_error_t err;
     	gpgme_data_t in, out;
     	gpgme_verify_result_t verify_result;
-    	gpgme_signature_t sig;
 	int ret;
 	
 
@@ -178,7 +177,7 @@ int main(int argc, char **argv){
 		}
 
     		// Check if the verify_result object has signatures
-    		if (verify_result && verify_result->signatures && gpg_err_code(sig->status) == GPG_ERR_NO_ERROR) {
+    		if (verify_result && verify_result->signatures && gpg_err_code(signatures->status) == GPG_ERR_NO_ERROR) {
 			
 			// Rewind the "out" data object
     			ret = gpgme_data_seek (out, 0, SEEK_SET);
