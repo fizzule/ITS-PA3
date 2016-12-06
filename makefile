@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall 
-LINKER = $(shell gpgme-config --libs --cflags)
+LINKER = -lgpgme
 
 TARGETSERVER = pa3_server
 TARGETCLIENT = pa3_client
@@ -10,11 +10,10 @@ default: all
 all: server client
 
 server: $(TARGETSERVER)
-	$(CC) $(CFLAGS) -o $(TARGETSERVER) ${LINKER} $(TARGETSERVER).c 
+	$(CC) $(CFLAGS) -o $(TARGETSERVER) $(TARGETSERVER).c $(LINKER)
 
 client: $(TARGETCLIENT)
-	gcc -o pa3_client ${LINKER} pa3_client.c -Wall -Werror
-	#$(CC) $(CFLAGS) -o $(TARGETCLIENT) ${LINKER} $(TARGETCLIENT).c 
+	$(CC) $(CFLAGS) -o $(TARGETCLIENT) $(TARGETCLIENT).c $(LINKER)
 
 clean:
 	$(RM) $(TARGETSERVER)
