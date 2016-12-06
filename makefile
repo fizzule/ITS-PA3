@@ -1,19 +1,12 @@
-CC = gcc
-CFLAGS = -g -Wall 
-LINKER = -lgpgme
-
-TARGETSERVER = pa3_server
-TARGETCLIENT = pa3_client
-
 default: all
 
 all: server client
 
-client: $(TARGETCLIENT)
-	$(CC) $(CFLAGS) -o pa3_client pa3_client.c $(LINKER)
+client: pa3_client
+	gcc -g -Wall -o pa3_client pa3_client.c -lgpgme
 	
 server: pa3_server
-	$(CC) $(CFLAGS) -o pa3_server pa3_server.c $(LINKER)
+	gcc -g -Wall -o pa3_server pa3_server.c -lgpgme
 
 clean:
 	$(RM) pa3_server
