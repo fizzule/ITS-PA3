@@ -143,12 +143,73 @@ int main(int argc, char **argv){
 		data_size = recvfrom(sock, buffer, BUF_SIZE, 0, &saddr, &saddr_size);
 		if(data_size < 0){
         		abbruch = 1;
+			break;
     		}
+		
+		printf("Data: %s\n" , buffer);
  
-         	
-       		//print details of the client/peer and the data received
-        	//printf("Received packet from %s:%d\n", inet_ntoa(saddr.sin_addr), ntohs(si_other.sin_port));
-        	printf("Data: %s\n" , buffer);
+		err = gpgme_data_new_from_mem (&in, buffer, data_size, 0);
+         	if(err){
+			printf("Error at data creation for input!\n");
+			abbruch = 1;
+			break;
+		}
+		
+		// Create a data object pointing to the out buffer
+    		err = gpgme_data_new (&out);
+    		if(err){
+			printf("Error at data creation for output!\n");
+			gpgme_data_release (in);
+			abbruch = 1;
+			break;
+		}
+
+    		// Perform a decrypt/verify action
+    		err = gpgme_op_verify (ctx, in, 0, out);
+
+    		// Retrieve the verification result
+    		verify_result = gpgme_op_verify_result (ctx);
+
+    		// Error handling
+    		if (err != GPG_ERR_NO_ERROR && !verify_result){
+			printf("The verify failed!\n");	
+			gpgme_data_release (in);
+			gpgme_data_release (out);
+			break;
+		}
+
+    		// Check if the verify_result object has signatures
+    		if (verify_result && verify_result->signatures && gpg_err_code(sig->status) == GPG_ERR_NO_ERROR) {
+			
+			// Rewind the "out" data object
+    			ret = gpgme_data_seek (out, 0, SEEK_SET);
+    			// Error handling
+    			if (ret){
+        			if (gpgme_err_code_from_errno (errno)){
+					printf("Error at rewinding data!\n");
+					gpgme_data_release (in);
+					gpgme_data_release (out);
+					break;
+				}
+			}
+    			// Read the contents of "out" and place it into buf
+    			ret = gpgme_data_read (out, buffer, BUF_SIZE);
+        		if (ret){
+        			if (gpgme_err_code_from_errno (errno)){
+					printf("Error at reading data!\n");
+					gpgme_data_release (in);
+					gpgme_data_release (out);
+					break;
+				}
+			}
+			printf("Correct Signature!\n");
+			printf("%.*s\n", ret, buffer);
+		}else{
+			printf("Incorrect Signature!\n");
+		}
+	
+		gpgme_data_release (in);
+		gpgme_data_release (out);
     	}
 	
 	close(sock);
