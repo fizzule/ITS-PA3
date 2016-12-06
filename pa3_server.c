@@ -36,10 +36,7 @@ void abbruch_handler(int s){
 }
 
 /*
-Hauptmethode erstellt Abbruch-Handler, startet Sniffer und sendet am Ende die "beamer_off"-Nachricht
-moegliche commands:
-./sniffer --> benutzt Default-Werte für Port und User
-./sniffer <port> <user> --> spezifische Eingabe von Port und User
+Hauptmethode erstellt Abbruch-Handler, gpg Kontext und validiert eingehende Nachrichten
 */
 int main(int argc, char **argv){
 
@@ -88,28 +85,27 @@ int main(int argc, char **argv){
 		return 1;
 	}
 	
-	/* Begin setup of GPGME */
+	/* Beginne Setup von GPGME */
 	setlocale (LC_ALL, "");
     	gpgme_check_version (NULL);
     	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
-    	/* End setup of GPGME */
-
     	err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
     	if(err){
 		printf("Error at engine check!\n");
 		return 1;
 	}
-    
-    	// Create the GPGME Context
+        /* Beende Setup von GPGME */
+	
+    	 /* Erstelle GPGME Kontext */
     	err = gpgme_new (&ctx);
     	if(err){
 		printf("Error at context creation!\n");
 		return 1;
 	}
 	
-    	// Set the context to textmode
+    	/* Setze Context zu textmode */
     	gpgme_set_textmode (ctx, 1);
-    	// Enable ASCII armor on the context
+    	/* Schalte ASCII armor an */
     	gpgme_set_armor (ctx, 1);	
 			
 	/* Erstelle Server Port */
@@ -136,9 +132,10 @@ int main(int argc, char **argv){
      
 	saddr_size = sizeof saddr;
 	
-    	/* Entgegennehmen der Pakete */
+
     	while(!abbruch)
     	{      
+		/* Entgegennehmen der Pakete */
 		data_size = recvfrom(sock, buffer, BUF_SIZE, 0, &saddr, &saddr_size);
 		if(data_size < 0){
         		abbruch = 1;
@@ -147,14 +144,13 @@ int main(int argc, char **argv){
 		
 		/* printf("Data: %s\n" , buffer); */
  
+		/* Erstelle Datenobjekte */
 		err = gpgme_data_new_from_mem (&in, buffer, data_size, 0);
          	if(err){
 			printf("Error at data creation for input!\n");
 			abbruch = 1;
 			break;
 		}
-		
-		// Create a data object pointing to the out buffer
     		err = gpgme_data_new (&out);
     		if(err){
 			printf("Error at data creation for output!\n");
@@ -163,13 +159,9 @@ int main(int argc, char **argv){
 			break;
 		}
 
-    		// Perform a decrypt/verify action
+    		/* Verifiziere */
     		err = gpgme_op_verify (ctx, in, NULL, out);
-
-    		// Retrieve the verification result
     		verify_result = gpgme_op_verify_result (ctx);
-
-    		// Error handling
     		if (err != GPG_ERR_NO_ERROR && !verify_result){
 			printf("The verify failed!\n");	
 			gpgme_data_release (in);
@@ -177,12 +169,11 @@ int main(int argc, char **argv){
 			break;
 		}
 
-    		// Check if the verify_result object has signatures
+    		/* Ueberpruefe, ob korrekte Signatur */
     		if (verify_result && verify_result->signatures && gpg_err_code(verify_result->signatures->status) == GPG_ERR_NO_ERROR) {
 			
-			// Rewind the "out" data object
+			/* Beschaffe Nachrichtentext */
     			ret = gpgme_data_seek (out, 0, SEEK_SET);
-    			// Error handling
     			if (ret){
         			if (gpgme_err_code_from_errno (errno)){
 					printf("Error at rewinding data!\n");
@@ -191,7 +182,6 @@ int main(int argc, char **argv){
 					break;
 				}
 			}
-    			// Read the contents of "out" and place it into buf
     			ret = gpgme_data_read (out, buffer, BUF_SIZE);
         		if (ret){
         			if (gpgme_err_code_from_errno (errno)){
@@ -203,6 +193,8 @@ int main(int argc, char **argv){
 			}
 			
 			printf("Correct Signature!\n");
+			
+			/* Beschaffe Absender */
 			err = gpgme_get_key(ctx, verify_result->signatures->fpr, &key, 0);
 			if(err){
 				printf("No Sender Information found!\n");
@@ -211,6 +203,7 @@ int main(int argc, char **argv){
 				printf("%s\n", key->uids->name);
 				gpgme_key_release (key);
 			}
+			
 			printf("Message:\n");
 			printf("%.*s\n", ret, buffer);
 		}else{
@@ -222,7 +215,6 @@ int main(int argc, char **argv){
     	}
 	
 	close(sock);
-    	// Release the context
 	gpgme_release (ctx);
 	printf("Finished!\n");
 	return abbruch;
