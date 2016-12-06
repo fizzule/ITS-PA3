@@ -1,5 +1,5 @@
 /*
-Client für das Senden von PGP verschlüsselten Nachrichten.
+Client fuer das Senden von PGP verschluesselten Nachrichten.
 */
 
 #include <stdio.h>
@@ -27,10 +27,7 @@ void usage(){
 }
 
 /*
-Hauptmethode erstellt Abbruch-Handler, startet Sniffer und sendet am Ende die "beamer_off"-Nachricht
-moegliche commands:
-./sniffer --> benutzt Default-Werte für Port und User
-./sniffer <port> <user> --> spezifische Eingabe von Port und User
+Hauptmethode erstellt gpg Kontext und sendet am Ende die PGP-Nachricht
 */
 int main(int argc, char **argv){
 	
@@ -83,30 +80,30 @@ int main(int argc, char **argv){
         	return 1;
     	}
  
-    	/* Begin setup of GPGME */
+    	/* Beginne Setup von GPGME */
 	setlocale (LC_ALL, "");
     	gpgme_check_version (NULL);
     	gpgme_set_locale (NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
-    	/* End setup of GPGME */
-
     	err = gpgme_engine_check_version (GPGME_PROTOCOL_OpenPGP);
     	if(err){
 		printf("Error at engine check!\n");
 		return 1;
-	}
+	}    	
+	/* Beende Setup von GPGME */
     
-    	// Create the GPGME Context
+    	// Erstelle GPGME Kontext
     	err = gpgme_new (&ctx);
     	if(err){
 		printf("Error at context creation!\n");
 		return 1;
 	}
 	
-    	// Set the context to textmode
+    	/* Setze Context zu textmode */
     	gpgme_set_textmode (ctx, 1);
-    	// Enable ASCII armor on the context
+    	/* Schalte ASCII armor an */
     	gpgme_set_armor (ctx, 1);
 
+	/* Suche nach dem Schluessel */
 	err = gpgme_op_keylist_start (ctx, argv[3], 0);
 	if(err){
 		printf("Error at keylist setup!\n");
@@ -121,13 +118,7 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-        printf ("%s:", key->subkeys->keyid);
-        if (key->uids && key->uids->name)
-        	printf (" %s", key->uids->name);
-        if (key->uids && key->uids->email)
-          	printf (" <%s>", key->uids->email);
-        printf("\n");
-
+	/* Fuege Schluessel fuer Signierung hinzu */
 	err = gpgme_signers_add (ctx, key);
 	gpgme_key_release (key);
 	if(err){
@@ -136,15 +127,13 @@ int main(int argc, char **argv){
 		return 1;
 	}
 	
-    	// Create a data object that contains the text to sign
+    	/* Erschaffe Datenobjekte */
     	err = gpgme_data_new_from_mem (&in, argv[4], textLength, 0);
         if(err){
 		printf("Error at data creation for input!\n");
 		gpgme_release (ctx);
 		return 1;
 	}
-
-    	// Create a data object pointing to the out buffer
     	err = gpgme_data_new (&out);
     	if(err){
 		printf("Error at data creation for output!\n");
@@ -153,7 +142,7 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-    	// Sign the contents of "in" using the defined mode and place it into "out"
+    	/* Signiere */
     	err = gpgme_op_sign (ctx, in, out, sigMode);
     	if(err){
 		printf("Error at signing!\n");
@@ -163,9 +152,8 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-    	// Rewind the "out" data object
+    	/* Beschaffe signierte Nachricht */
     	ret = gpgme_data_seek (out, 0, SEEK_SET);
-    	// Error handling
     	if (ret){
         	if (gpgme_err_code_from_errno (errno)){
 			printf("Error at rewinding data!\n");
@@ -175,7 +163,6 @@ int main(int argc, char **argv){
 			return 1;
 		}
 	}
-    	// Read the contents of "out" and place it into buf
     	ret = gpgme_data_read (out, buffer, BUF_SIZE);
         if (ret){
         	if (gpgme_err_code_from_errno (errno)){
@@ -186,14 +173,12 @@ int main(int argc, char **argv){
 			return 1;
 		}
 	}
-	// Write the contents of "buf" to the console
+	
+	/* Gebe signierte Nachricht aus */
         printf("%.*s\n", ret, buffer);
 
-    	// Release the "in" data object
     	gpgme_data_release (in);
-    	// Release the "out" data object
     	gpgme_data_release (out);
-    	// Release the context
 	gpgme_release (ctx);
 	
 	/* Oeffnen des Socket */
@@ -203,11 +188,12 @@ int main(int argc, char **argv){
 		return 1;
 	}
  
-        //send the message
+        /* Senden der Nachricht */
         if (sendto(sock, buffer, ret , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
 		close(sock);
         	return 1;
         }
+	
 	close(sock);
 	printf("Finished!\n");
 	return 0;
