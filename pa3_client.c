@@ -192,7 +192,7 @@ int main(int argc, char **argv){
 		}
 	}
 	// Write the contents of "buf" to the console
-        printf("%.*s\n", buffer, ret);
+        printf("%.*s\n", ret, buffer);
 
     	// Release the "in" data object
     	gpgme_data_release (in);
