@@ -152,6 +152,8 @@ int main(int argc, char **argv){
     	}
 	
 	close(sock);
+    	// Release the context
+	gpgme_release (ctx);
 	printf("Finished!\n");
 	return abbruch;
 }
