@@ -57,13 +57,12 @@ int main(int argc, char **argv){
 	char ch;
 	
 	gpgme_ctx_t ctx;
-	gpgme_key_t key;
     	gpgme_error_t err;
-    	gpgme_data_t in, out, result;
+    	gpgme_data_t in, out;
     	gpgme_verify_result_t verify_result;
     	gpgme_signature_t sig;
+	int ret;
 	
-	gpgme_sig_mode_t sigMode = GPGME_SIG_MODE_CLEAR;
 
 	/* Erstellen des Abbruch-Handlers */
 	sigIntHandler.sa_handler = abbruch_handler;
