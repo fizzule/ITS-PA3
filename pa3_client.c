@@ -11,9 +11,11 @@ Client für das Senden von PGP verschlüsselten Nachrichten.
 #include <arpa/inet.h>
 #include <locale.h>
 #include <gpgme.h>
+#include <errno.h>
 
 int sock;
-char buffer[65536];
+int BUF_SIZE = 65536;
+char buffer[BUF_SIZE+1];
 
 /*
 Gebe Usage aus.
@@ -48,13 +50,8 @@ int main(int argc, char **argv){
     	gpgme_signature_t sig;
     	int tnsigs, nsigs;
     	int ret;
-	int BUF_SIZE = 512;
-	char buf[BUF_SIZE + 1];
 	unsigned int textLength = strlen (argv[4]);
-    	/* Set the GPGME signature mode
-        	GPGME_SIG_MODE_NORMAL : Signature with data
-        	GPGME_SIG_MODE_CLEAR  : Clear signed text
-        	GPGME_SIG_MODE_DETACH : Detached signature */
+
     	gpgme_sig_mode_t sigMode = GPGME_SIG_MODE_CLEAR;
 	
 	/* Verarbeiten von spezifischen Eingaben */
@@ -101,9 +98,6 @@ int main(int argc, char **argv){
     	gpgme_set_textmode (ctx, 1);
     	// Enable ASCII armor on the context
     	gpgme_set_armor (ctx, 1);
-
-	printf("Exit correct!\n");
-	exit(0);
 	
     	// Create a data object that contains the text to sign
     	err = gpgme_data_new_from_mem (&in, argv[4], textLength, 0);
@@ -135,18 +129,27 @@ int main(int argc, char **argv){
     	// Sign the contents of "in" using the defined mode and place it into "out"
     	err = gpgme_op_sign (ctx, in, out, sigMode);
     	if(err){
-		close_all();
+		printf("Error at signing!\n");
+		gpgme_data_release (in);
+		gpgme_data_release (out);
+		gpgme_release (ctx);
 		return 1;
 	}
 
     	// Rewind the "out" data object
     	ret = gpgme_data_seek (out, 0, SEEK_SET);
     	// Error handling
-    	//if (ret)
-        //fail_if_err (gpgme_err_code_from_errno (errno));
-
+    	if (ret){
+        	if (gpgme_err_code_from_errno (errno)){
+			printf("Error at signing!\n");
+			gpgme_data_release (in);
+			gpgme_data_release (out);
+			gpgme_release (ctx);
+			return 1;
+		}
+	}
     	// Read the contents of "out" and place it into buf
-    	while ((ret = gpgme_data_read (out, buf, BUF_SIZE)) > 0) {
+    	while ((ret = gpgme_data_read (out, buffer, BUF_SIZE)) > 0) {
         	// Write the contents of "buf" to the console
         	fwrite (buf, ret, 1, stdout);
     	}
@@ -201,11 +204,8 @@ int main(int argc, char **argv){
     	gpgme_data_release (in);
     	// Release the "out" data object
     	gpgme_data_release (out);
-
     	// Release the context
 	gpgme_release (ctx);
-	
-	
 	
 	/* Oeffnen des Socket */
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -220,17 +220,15 @@ int main(int argc, char **argv){
      
     	if (inet_aton(argv[1] , &saddr.sin_addr) == 0){
         	fprintf(stderr, "inet_aton() failed\n");
-		close_all();
+		close(sock);
         	return 1;
     	}
  
         //send the message
         if (sendto(sock, argv[4], strlen(argv[4]) , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
-            	close_all();
+		close(sock);
         	return 1;
         }
- 
-	close_all();
 	printf("Finished!\n");
 	return 0;
 }
