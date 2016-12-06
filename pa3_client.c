@@ -158,16 +158,6 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-    	// Create a data object pointing to the result buffer
-   	err = gpgme_data_new (&result);
-        if(err){
-		printf("Error at data creation for result!\n");
-		gpgme_data_release (in);
-		gpgme_data_release (out);
-		gpgme_release (ctx);
-		return 1;
-	}
-
     	// Sign the contents of "in" using the defined mode and place it into "out"
     	err = gpgme_op_sign (ctx, in, out, sigMode);
     	if(err){
