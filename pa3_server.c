@@ -11,23 +11,13 @@ Server für das Empfangen von PGP verschlüsselten Nachrichten.
 #include <arpa/inet.h>
 #include <locale.h>
 #include <gpgme.h>
+#include <errno.h>
+
+#define BUF_SIZE 65536
 
 int sock;
-char buffer[65536];
-
-/*
-Schliesse Socket, wenn offen und gebe Buffer frei, wenn noch nicht geschehen.
-*/
-void close_all(){
-	if (sock >= 0){
-		close(sock);
-		sock = -1;
-	}
-	//if (buffer != NULL) {
-	//	free(buffer);
-	//	buffer = NULL;
-	//}
-}
+char buffer[BUF_SIZE+1];
+char abbruch = 0;
 
 /*
 Gebe Usage aus.
@@ -42,8 +32,7 @@ Spezieller Handler bei Abbruch mit Strg+C um das Programm korrekt zu schliessen.
 s: Signal ID
 */
 void abbruch_handler(int s){
-	close_all();
-	exit(1);
+	abbruch = 1;
 }
 
 /*
@@ -79,6 +68,22 @@ int main(int argc, char **argv){
 		return 1;
 	}
 	
+	n = sscanf(argv[1, "%d%c", &value, &ch);
+        /* Wenn sscanf keine Nummer konvertieren kann */
+    	if (n != 1) {
+		printf("Please provide correct port number!\n");
+		usage();
+		return 1;
+	}
+	
+	/* Erstelle Server Port */
+    	memset((char *) &serveraddr, 0, sizeof(serveraddr));
+     
+    	serveraddr.sin_family = AF_INET;
+    	serveraddr.sin_port = htons(atoi(argv[1]));
+    	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
+     
+	
      	/* Oeffnen des Socket */
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if(sock < 0){
@@ -86,29 +91,21 @@ int main(int argc, char **argv){
 		return 1;
 	}
      
-    	/* Erstelle Server Port */
-    	memset((char *) &serveraddr, 0, sizeof(serveraddr));
-     
-    	serveraddr.sin_family = AF_INET;
-    	serveraddr.sin_port = htons(atoi(argv[1]));
-    	serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-     
     	/* Binde Socket */
 	bindret = bind(sock , (struct sockaddr*)&serveraddr, sizeof(serveraddr));
 	if(bindret < 0){
-        	close_all();
+        	close(sock);
 		return 1;
     	}
      
 	saddr_size = sizeof saddr;
 	
     	/* Entgegennehmen der Pakete */
-    	while(1)
+    	while(!abbruch)
     	{      
-		data_size = recvfrom(sock, buffer, 65536, 0, &saddr, &saddr_size);
+		data_size = recvfrom(sock, buffer, BUF_SIZE, 0, &saddr, &saddr_size);
 		if(data_size < 0){
-        		close_all();
-			return 1;
+        		abbruch = 1;
     		}
  
          	
@@ -117,7 +114,7 @@ int main(int argc, char **argv){
         	printf("Data: %s\n" , buffer);
     	}
 	
-	close_all();
+	close(sock);
 	printf("Finished!\n");
-	return 0;
+	return abbruch
 }
