@@ -203,7 +203,6 @@ int main(int argc, char **argv){
 		return 1;
 	}
  
-	buffer[130]='a';
         //send the message
         if (sendto(sock, buffer, ret , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
 		close(sock);
