@@ -144,7 +144,7 @@ int main(int argc, char **argv){
 			break;
     		}
 		
-		printf("Data: %s\n" , buffer);
+		/* printf("Data: %s\n" , buffer); */
  
 		err = gpgme_data_new_from_mem (&in, buffer, data_size, 0);
          	if(err){
