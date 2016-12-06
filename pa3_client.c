@@ -45,6 +45,7 @@ int main(int argc, char **argv){
 	char ch;
 	
 	gpgme_ctx_t ctx;
+	gpgme_key_t key;
     	gpgme_error_t err;
     	gpgme_data_t in, out, result;
     	gpgme_verify_result_t verify_result;
@@ -99,6 +100,35 @@ int main(int argc, char **argv){
     	gpgme_set_textmode (ctx, 1);
     	// Enable ASCII armor on the context
     	gpgme_set_armor (ctx, 1);
+
+	err = gpgme_op_keylist_start (ctx, argv[3], 0);
+	if(err){
+		printf("Error at keylist setup!\n");
+		gpgme_release (ctx);
+		return 1;
+	}
+        err = gpgme_op_keylist_next (ctx, &key);
+	gpgme_op_keylist_end (ctx);
+	if(err){
+		printf("Specified Key not found!\n");
+		gpgme_release (ctx);
+		return 1;
+	}
+
+        printf ("%s:", key->subkeys->keyid);
+        if (key->uids && key->uids->name)
+        	printf (" %s", key->uids->name);
+        if (key->uids && key->uids->email)
+          	printf (" <%s>", key->uids->email);
+        printf("\n");
+
+	err = gpgme_signers_add (ctx, key);
+	gpgme_key_release (key);
+	if(err){
+		printf("Error at key adding for signing!\n");
+		gpgme_release (ctx);
+		return 1;
+	}
 	
     	// Create a data object that contains the text to sign
     	err = gpgme_data_new_from_mem (&in, argv[4], textLength, 0);
