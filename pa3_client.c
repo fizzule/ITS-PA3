@@ -38,8 +38,7 @@ int main(int argc, char **argv){
 	
 	socklen_t saddr_size;
 	struct sockaddr_in saddr;	
-
-	saddr_size = sizeof(saddr);
+	
 	int value;
 	int n;
 	char ch;
@@ -55,6 +54,8 @@ int main(int argc, char **argv){
 	unsigned int textLength = strlen (argv[4]);
 
     	gpgme_sig_mode_t sigMode = GPGME_SIG_MODE_CLEAR;
+	
+	saddr_size = sizeof(saddr);
 	
 	/* Verarbeiten von spezifischen Eingaben */
 	if(argc == 5){
@@ -75,6 +76,16 @@ int main(int argc, char **argv){
 		printf("Please provide correct port number!\n");
 		usage();
 		return 1;
+    	}
+	
+	memset((char *) &saddr, 0, sizeof(saddr));
+    	saddr.sin_family = AF_INET;
+    	saddr.sin_port = htons(atoi(argv[2]));
+     
+    	if (inet_aton(argv[1] , &saddr.sin_addr) == 0){
+        	printf("Address Setup Error\n");
+		usage();
+        	return 1;
     	}
  
     	/* Begin setup of GPGME */
@@ -245,16 +256,6 @@ int main(int argc, char **argv){
 		printf("Socket Error\n");
 		return 1;
 	}
- 
-    	memset((char *) &saddr, 0, sizeof(saddr));
-    	saddr.sin_family = AF_INET;
-    	saddr.sin_port = htons(atoi(argv[2]));
-     
-    	if (inet_aton(argv[1] , &saddr.sin_addr) == 0){
-        	fprintf(stderr, "inet_aton() failed\n");
-		close(sock);
-        	return 1;
-    	}
  
         //send the message
         if (sendto(sock, argv[4], strlen(argv[4]) , 0 , (struct sockaddr *) &saddr, saddr_size)==-1){
