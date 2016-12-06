@@ -203,7 +203,7 @@ int main(int argc, char **argv){
 			}
 			
 			printf("Correct Signature!\n");
-			err = gpgme_get_key(ctx, verify_result->signatures->fpr, &key, 0)
+			err = gpgme_get_key(ctx, verify_result->signatures->fpr, &key, 0);
 			if(err){
 				printf("No Sender Information found!\n");
 			}else{
