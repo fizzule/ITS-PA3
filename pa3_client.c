@@ -151,7 +151,8 @@ int main(int argc, char **argv){
     	// Read the contents of "out" and place it into buf
     	while ((ret = gpgme_data_read (out, buffer, BUF_SIZE)) > 0) {
         	// Write the contents of "buf" to the console
-        	fwrite (buf, ret, 1, stdout);
+        	fwrite (buffer, ret, 1, stdout);
+		fwrite ("-", 1, 1, stdout);
     	}
 
     	fwrite ("\n", 1, 1, stdout);
